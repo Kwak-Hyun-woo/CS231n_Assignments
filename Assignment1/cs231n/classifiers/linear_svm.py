@@ -35,13 +35,17 @@ def svm_loss_naive(W, X, y, reg):
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
+        dW[:, j] += X[i, :]        # SVM loss
+        dW[:, y[i]] -= X[i, :]
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
   loss /= num_train
+  dW /= num_train
 
   # Add regularization to the loss.
   loss += reg * np.sum(W * W)
+  dW += 2*reg*W
 
   #############################################################################
   # TODO:                                                                     #
@@ -51,7 +55,6 @@ def svm_loss_naive(W, X, y, reg):
   # loss is being computed. As a result you may need to modify some of the    #
   # code above to compute the gradient.                                       #
   #############################################################################
-
 
   return loss, dW
 
@@ -70,7 +73,19 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  score = np.matmul(X, W)
+  correct_class_scores = score[np.arange(num_train), y]
+  margin = np.ones(score.shape)
+  margin[np.arange(num_train), y] = 0
+  score += margin
+
+  score = np.maximum(0, score - np.reshape(correct_class_scores,(correct_class_scores.shape[0],1)))
+  loss = np.sum(score, axis= 1)
+  loss = loss.sum() / num_train
+
+  # Add Regulurization Term
+  loss += reg * np.sum(W * W)
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -85,7 +100,14 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  pass
+  score_back = np.zeros(score.shape)
+  score_back[score > 0] = 1
+  score_back[range(num_train), y] = -np.sum(score_back, axis = 1)
+
+  dW = np.matmul(X.T, score_back) / num_train
+
+  dW += 2*reg*W
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
