@@ -30,7 +30,27 @@ def softmax_loss_naive(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+
+
+  score = X.dot(W)
+  num_train = X.shape[0]
+  num_classes = score.shape[1]
+
+  # Compute SoftMax
+  for i in range(num_train):
+    train_score = score[i]  # Split Each Train Data
+    softmax = np.exp(train_score) / np.sum(np.exp(train_score))
+    loss -= np.log(softmax[y[i]])
+    #Weight Gradients
+    for j in range(num_classes):
+      dW[:,j] += X[i] * softmax[j]
+    dW[:,y[i]] -= X[i]
+  # Divide With # of train
+  loss /= num_train
+  dW /= num_train
+
+  loss += reg * np.sum(W * W)
+  dW += W * reg * 2
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -54,7 +74,25 @@ def softmax_loss_vectorized(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  score = X.dot(W)
+  num_train = X.shape[0]
+
+  score = np.exp(score)
+  score_sum = np.sum(score, axis=1, keepdims= True)
+  softmax = score / score_sum
+
+  loss = -np.log(softmax[np.arange(num_train), y])
+  loss = np.sum(loss)
+
+  # dW computation
+  softmax[np.arange(num_train), y] -= 1
+  dW = np.matmul(X.T, softmax)
+
+  loss /= num_train
+  dW /= num_train
+
+  loss += reg * np.sum(W * W)
+  dW += 2 * reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
