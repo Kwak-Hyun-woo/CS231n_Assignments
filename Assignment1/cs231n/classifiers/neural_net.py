@@ -76,7 +76,13 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    scores = np.zeros((N, ))
+    scores_1 = X.dot(W1)
+    for i in xrange(scores_1.shape[0]):
+      scores_1[i] += b1
+    scores_2 = scores_1.dot(W2)
+    for j in xrange(scores_2.shape[0]):
+      scores_2[j] += b2
+    scores = scores_2
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -209,7 +215,7 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    y_pred = np.argmax(self.loss(X), axis= 1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
